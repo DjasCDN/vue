@@ -17,6 +17,14 @@
 		"oAP": "/api/index.php",
 		"oF": 0
 		},
+	"/api/test.log": {
+		"cB": 0,
+		"ft": 8192,
+		"hM": 0,
+		"oA": 0,
+		"oAP": "/api/test.log",
+		"oF": 0
+		},
 	"/index.html": {
 		"cB": 0,
 		"ft": 8192,
@@ -52,7 +60,7 @@
 "manualImportLinks": {
 	},
 "projectAttributes": {
-	"creationDate": 618493732.31244004,
+	"creationDate": 618493732,
 	"displayValue": "admin",
 	"displayValueWasSetByUser": 0,
 	"iconImageName": "brackets-brick",
@@ -770,7 +778,7 @@
 			},
 		"new-parens": {
 			"active": 0,
-			"optionString": "'always'"
+			"optionString": ""
 			},
 		"newline-per-chained-call": {
 			"active": 0,
@@ -982,7 +990,7 @@
 			},
 		"no-invalid-this": {
 			"active": 0,
-			"optionString": "{'capIsConstructor': true}"
+			"optionString": ""
 			},
 		"no-irregular-whitespace": {
 			"active": 1,
@@ -1202,7 +1210,7 @@
 			},
 		"no-tabs": {
 			"active": 0,
-			"optionString": "{allowIndentationTabs: false}"
+			"optionString": ""
 			},
 		"no-template-curly-in-string": {
 			"active": 0,
@@ -1262,7 +1270,7 @@
 			},
 		"no-unsafe-negation": {
 			"active": 1,
-			"optionString": "{'enforceForOrderingRelations': false}"
+			"optionString": ""
 			},
 		"no-unused-expressions": {
 			"active": 0,
@@ -1294,7 +1302,7 @@
 			},
 		"no-useless-computed-key": {
 			"active": 0,
-			"optionString": "{'enforceForClassMembers': false}"
+			"optionString": ""
 			},
 		"no-useless-concat": {
 			"active": 0,
@@ -1322,7 +1330,7 @@
 			},
 		"no-void": {
 			"active": 0,
-			"optionString": "{'allowAsStatement': false}"
+			"optionString": ""
 			},
 		"no-warning-comments": {
 			"active": 0,
@@ -1538,7 +1546,7 @@
 			},
 		"use-isnan": {
 			"active": 1,
-			"optionString": "{'enforceForSwitchCase': true, 'enforceForIndexOf': false}"
+			"optionString": ""
 			},
 		"valid-jsdoc": {
 			"active": 0,
@@ -2092,7 +2100,7 @@
 		"autoOutputPathReplace1": "sass",
 		"autoOutputPathReplace2": "css",
 		"autoOutputPathStyle": 0,
-		"compilerType": 0,
+		"compilerType": 1,
 		"createSourceMap": 0,
 		"decimalPrecision": 10,
 		"emitCharset": 1,

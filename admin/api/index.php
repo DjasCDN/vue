@@ -1,6 +1,6 @@
 <?php
 $settings = json_decode(file_get_contents('php://input'), true);
-// file_put_contents(__DIR__ . '/test.log', print_r($GLOBALS["settings"], 1), FILE_APPEND);
+file_put_contents(__DIR__ . '/test.log', print_r($GLOBALS["settings"], 1), FILE_APPEND);
 
 switch ($settings["param"]) {
 	case "htmlFilesName":
@@ -16,7 +16,8 @@ switch ($settings["param"]) {
     $newFile = "../../" . $settings["file_name_value"] . ".html";
     if(file_exists($newFile)) {
       $message =  "Фаил с таким именем уже существует";
-      header('HTTP/1.0 400 Bad Request');
+      // header('HTTP/1.0 400 Bad Request');
+			header('Content-type: application/json');
       echo json_encode($message);
     } else {
       fopen($newFile, "w");
@@ -26,7 +27,7 @@ switch ($settings["param"]) {
     }
 	break;
   case "htmlDelete":
-    $newFile = "../../" . $settings["file_name_value"] . ".html";
+    $newFile = "../../" . $settings["file_name_value"];
     if(file_exists($newFile)) {
       unlink($newFile);
       $message = "Фаил успешно удален";
@@ -34,7 +35,8 @@ switch ($settings["param"]) {
       echo json_encode($message);
     } else {
       $message =  "Фаил с таким именем не существует";
-      header('HTTP/1.0 400 Bad Request');
+      // header('HTTP/1.0 400 Bad Request');
+			header('Content-type: application/json');
       echo json_encode($message);
     }
 	break;

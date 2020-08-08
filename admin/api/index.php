@@ -1,6 +1,6 @@
 <?php
 $settings = json_decode(file_get_contents('php://input'), true);
-file_put_contents(__DIR__ . '/test.log', print_r($GLOBALS["settings"], 1), FILE_APPEND);
+// file_put_contents(__DIR__ . '/test.log', print_r($GLOBALS["settings"], 1), FILE_APPEND);
 
 switch ($settings["param"]) {
 	case "htmlFilesName":

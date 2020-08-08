@@ -52,9 +52,9 @@
 
 
 
-  <!-- <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script> -->
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <!-- <script src="editor.js"></script> -->
-  <script src="js/script.js"></script>
+  <script src="js/script.js?v=<?= rand(0, 111111); ?>"></script>
 </body>
 </html>

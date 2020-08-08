@@ -55,54 +55,165 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
+  //
+  class DOMHalper {
+    static parseStrToDom(str) {
+      let  parser = new DOMParser();
+      // return parser.parseFromString(str, "application/xml");
+      return parser.parseFromString(str, "text/html");
+    }
 
+    static serializeDomStr(dom) {
+      let serializer = new XMLSerializer();
+      // console.log(serializer.serializeToString(dom));
+      return serializer.serializeToString(dom);
+    }
+
+    static wrapTextNodes(dom) {
+      // console.log(dom);
+      let body = dom.body;
+      // console.log(body);
+      let textNodes = [];
+
+      function recursy(element) {
+        element.childNodes.forEach((node) => {
+          // console.log(node);
+          if(node.nodeName === "#text" && node.nodeValue.replace(/\s+/g, "").length > 0) {
+            // console.log(node);
+            textNodes.push(node);
+          } else {
+            // if(node.nextElementSibling !== null) {
+            //   if(node.nextElementSibling.nodeName !== "SCRIPT") {
+            //     // console.log(node);
+            //     // recursy(node);
+            //   }
+            // }
+            // console.log(node);
+            recursy(node);
+          }
+        });
+      }
+      recursy(body);
+
+      textNodes.forEach((node, i) => {
+        const wrapper = dom.createElement("text-editor");
+        node.parentNode.replaceChild(wrapper, node);
+        wrapper.appendChild(node);
+        wrapper.contentEditable = "true";
+        wrapper.setAttribute("nodeid", i);
+      });
+
+      // console.log(dom);
+
+      return dom;
+    }
+
+    static unwrapTextNodes(dom) {
+      dom.body.querySelectorAll("text-editor").forEach((element) => {
+        element.parentNode.replaceChild(element.firstChild, element);
+      })
+    }
+  }
+
+  //
+  let requestURL = "api/index.php";
 
   //
   class Editor {
     constructor() {
       this.iframe = document.querySelector("#iframe");
     }
+
     open(page) {
-      this.iframe.load("../" + page, () => {
-        // console.log("Ok");
-        const body = this.iframe.contentDocument.body;
-        let textNodes = [];
+      this.currentPage = page;
 
-        function recursy(element) {
-          element.childNodes.forEach((node) => {
-            if(node.nodeName === "#text" && node.nodeValue.replace(/\s+/g, "").length > 0) {
-              textNodes.push(node);
-              // console.log(node);
-            } else {
-              recursy(node);
-            }
-          });
-        }
-        recursy(body);
-        // console.log(textNodes);
+      axios
+        .get("../" + page)
+        .then((res) => DOMHalper.parseStrToDom(res.data))
+        .then(DOMHalper.wrapTextNodes)
+        .then((dom) => {
+          this.virtualDom = dom;
+          return dom;
+        })
+        .then(DOMHalper.serializeDomStr)
+        .then((html) => {
+          let body = {
+              param: "saveTemPage",
+              html: html
+            };
+          const str = JSON.stringify(body);
+          axios.post(requestURL, str)
+            .then((response) => {
+              console.log(response);
+            })
+            .catch((error) => {
+              console.log(error);
+            })
+        })
+        .then(() => this.iframe.load("../temp.html"))
+        .then(() => this.enableEditing())
+    }
 
-        textNodes.forEach((node) => {
-          // console.log(node);
-          const wrapper = this.iframe.contentDocument.createElement("text-editor");
-          node.parentNode.replaceChild(wrapper, node);
-          wrapper.appendChild(node);
-          wrapper.contentEditable = "true";
+
+
+    enableEditing() {
+      this.iframe.contentDocument.body.querySelectorAll("text-editor").forEach((element) => {
+        element.contentEditable = "true";
+        element.addEventListener("input", () => {
+          // console.log(this);
+          this.onTextEdit(element);
         });
-      });
+      })
+    }
+
+    onTextEdit(element) {
+      // console.log(element);
+      let id = element.getAttribute("nodeid");
+      // console.log(id);
+      this.virtualDom.body.querySelector(`[nodeid="${id}"]`).innerHTML = element.innerHTML;
+    }
+
+    save() {
+      let newDom = this.virtualDom.cloneNode(this.virtualDom);
+      DOMHalper.unwrapTextNodes(newDom);
+      let html = DOMHalper.serializeDomStr(newDom);
+      // console.log(html);
+      let body = {
+          param: "savePage",
+          pageName: this.currentPage,
+          html: html
+        };
+      const str = JSON.stringify(body);
+      axios.post(requestURL, str)
+        .then((response) => {
+          console.log(response);
+        })
+        .catch((error) => {
+          console.log(error);
+        })
     }
   }
 
 
 
 
-
-
-
+  //
   window.editor = new Editor();
   // window.addEventListener("load", function() {
   //   window.editor.open("index.html");
   // });
   window.onload = window.editor.open("index.html");
+
+
+
+
+
+
+
+
+
+
+
 
 
 

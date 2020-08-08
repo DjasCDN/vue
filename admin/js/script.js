@@ -49,12 +49,6 @@ document.addEventListener('DOMContentLoaded', function() {
       }
   };
 
-
-
-
-
-
-
   //
   class DOMHalper {
     static parseStrToDom(str) {
@@ -122,6 +116,10 @@ document.addEventListener('DOMContentLoaded', function() {
       this.virtualElement = virtualElement;
 
       this.element.addEventListener("click", () => this.onClick());
+      if(this.element.parentNode.nodeName === "A" || this.element.parentNode.nodeName === "BUTTON") {
+        this.element.addEventListener("contextmenu", (e) => this.onCtxMenu(e));
+
+      }
       this.element.addEventListener("blur", () => this.onBlur());
       this.element.addEventListener("keypress", (e) => this.onKeypress(e));
       this.element.addEventListener("input", () => this.onTextEdit());
@@ -130,6 +128,11 @@ document.addEventListener('DOMContentLoaded', function() {
     onClick() {
       this.element.contentEditable = "true";
       this.element.focus();
+    }
+
+    onCtxMenu(e) {
+      e.preventDefault();
+      this.onClick();
     }
 
     onBlur() {
@@ -157,11 +160,11 @@ document.addEventListener('DOMContentLoaded', function() {
       this.iframe = document.querySelector("#iframe");
     }
 
-    open(page) {
+    open(page, cb) {
       this.currentPage = page;
 
       axios
-        .get("../" + page)
+        .get("../" + page + "?v=" + Math.random())
         .then((res) => DOMHalper.parseStrToDom(res.data))
         .then(DOMHalper.wrapTextNodes)
         .then((dom) => {
@@ -186,6 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(() => this.iframe.load("../temp.html"))
         .then(() => this.enableEditing())
         .then(() => this.injectStyles())
+        .then(cb)
     }
 
     enableEditing() {
@@ -211,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
       this.iframe.contentDocument.head.appendChild(style);
     }
 
-    save() {
+    save(onSucces, onError) {
       let newDom = this.virtualDom.cloneNode(this.virtualDom);
       DOMHalper.unwrapTextNodes(newDom);
       let html = DOMHalper.serializeDomStr(newDom);
@@ -223,24 +227,55 @@ document.addEventListener('DOMContentLoaded', function() {
         };
       const str = JSON.stringify(body);
       axios.post(requestURL, str)
-        .then((response) => {
-          console.log(response);
-        })
-        .catch((error) => {
-          console.log(error);
-        })
+        // .then((response) => {
+        //   console.log(response);
+        // })
+        .then(onSucces)
+        // .catch((error) => {
+        //   console.log(error);
+        // })
+        .catch(onError)
+
     }
   }
 
-
-
-
   //
   window.editor = new Editor();
-  // window.addEventListener("load", function() {
-  //   window.editor.open("index.html");
-  // });
-  window.onload = window.editor.open("index.html");
+  // // window.addEventListener("load", function() {
+  // //   window.editor.open("index.html");
+  // // });
+  // window.onload = window.editor.open("index.html");
+
+
+
+
+  new Vue({
+    el: "#app",
+    data: {
+      showLoader: true
+    },
+    methods: {
+      onBtnSave() {
+        // console.log("Click");
+        this.showLoader = true;
+        window.editor.save(
+          () => {
+            this.showLoader = false;
+            UIkit.notification({message: 'Успешно сохранено!', status: 'success'});
+          },
+          () => {
+            this.showLoader = false;
+            UIkit.notification({message: 'Ошибка сохранения', status: 'danger'});
+          }
+        );
+      }
+    },
+    created() {
+      window.editor.open("index.html", () => {
+        this.showLoader = false;
+      });
+    }
+  })
 
 
 

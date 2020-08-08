@@ -5,10 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>admin</title>
-
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.5.5/css/uikit.min.css" />
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+<div id="app">
+  <div class="panel">
+    <button class="uk-button uk-button-primary" type="button" uk-toggle="target: #modal-save">Опубликовать</button>
+  </div>
+  <!-- This is the modal -->
+  <div id="modal-save" uk-modal>
+      <div class="uk-modal-dialog uk-modal-body">
+          <h2 class="uk-modal-title">Сохранение</h2>
+          <p>Сохранить и опубликовать изменения?</p>
+          <p class="uk-text-right">
+              <button class="uk-button uk-button-default uk-modal-close" type="button">Отмена</button>
+              <button class="uk-button uk-button-primary uk-modal-close" type="button" @click="onBtnSave">Сохранить</button>
+          </p>
+      </div>
+  </div>
+
+  <div class="loader" v-bind:class="{ 'active' : showLoader }">
+    <span uk-spinner="ratio: 4.5"></span>
+  </div>
+</div>
 
 
 <iframe src="" frameborder="0" id="iframe" class="iframe"></iframe>
@@ -50,11 +71,12 @@
 
 
 
-
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.5.5/js/uikit.min.js"></script>
 
   <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <!-- <script src="editor.js"></script> -->
+
   <script src="js/script.js?v=<?= rand(0, 111111); ?>"></script>
 </body>
 </html>

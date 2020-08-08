@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const wrapper = dom.createElement("text-editor");
         node.parentNode.replaceChild(wrapper, node);
         wrapper.appendChild(node);
-        wrapper.contentEditable = "true";
+        wrapper.contentEditable = "false";
         wrapper.setAttribute("nodeid", i);
       });
 
@@ -112,6 +112,39 @@ document.addEventListener('DOMContentLoaded', function() {
       dom.body.querySelectorAll("text-editor").forEach((element) => {
         element.parentNode.replaceChild(element.firstChild, element);
       })
+    }
+  }
+
+  //
+  class EditorText {
+    constructor(element, virtualElement) {
+      this.element = element;
+      this.virtualElement = virtualElement;
+
+      this.element.addEventListener("click", () => this.onClick());
+      this.element.addEventListener("blur", () => this.onBlur());
+      this.element.addEventListener("keypress", (e) => this.onKeypress(e));
+      this.element.addEventListener("input", () => this.onTextEdit());
+    }
+
+    onClick() {
+      this.element.contentEditable = "true";
+      this.element.focus();
+    }
+
+    onBlur() {
+      this.element.contentEditable = "false";
+    }
+
+    onKeypress(e) {
+      if(e.keyCode === 13) {
+        this.element.blur();
+      }
+    }
+
+    onTextEdit() {
+      // console.log(element);
+      this.virtualElement.innerHTML = this.element.innerHTML;
     }
   }
 
@@ -152,25 +185,30 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(() => this.iframe.load("../temp.html"))
         .then(() => this.enableEditing())
+        .then(() => this.injectStyles())
     }
-
-
 
     enableEditing() {
       this.iframe.contentDocument.body.querySelectorAll("text-editor").forEach((element) => {
-        element.contentEditable = "true";
-        element.addEventListener("input", () => {
-          // console.log(this);
-          this.onTextEdit(element);
-        });
+        let id = element.getAttribute("nodeid");
+        let virtualElement = this.virtualDom.body.querySelector(`[nodeid="${id}"]`);
+        new EditorText(element, virtualElement);
       })
     }
 
-    onTextEdit(element) {
-      // console.log(element);
-      let id = element.getAttribute("nodeid");
-      // console.log(id);
-      this.virtualDom.body.querySelector(`[nodeid="${id}"]`).innerHTML = element.innerHTML;
+    injectStyles() {
+      let style = this.iframe.contentDocument.createElement("style");
+      style.innerHTML = `
+        text-editor:hover {
+          outline: 3px solid orange;
+          outline-offset: 8px;
+        }
+        text-editor:focus {
+          outline: 3px solid red;
+          outline-offset: 8px;
+        }
+      `;
+      this.iframe.contentDocument.head.appendChild(style);
     }
 
     save() {

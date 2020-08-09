@@ -5,54 +5,68 @@ document.addEventListener('DOMContentLoaded', function() {
 
   //
   HTMLIFrameElement.prototype.load = function (url, callback) {
-      const iframe = this;
-      try {
-          iframe.src = url + "?rnd=" + Math.random().toString().substring(2);
-      } catch (error) {
-          if (!callback) {
-              return new Promise((resolve, reject) => {
-                  reject(error);
-              })
-          } else {
-              callback(error);
-          }
-      }
+    const iframe = this;
+    try {
+        iframe.src = url + "?rnd=" + Math.random().toString().substring(2);
+        // iframe.onload = () => {
+        //   setTimeout(function(){
+        //     console.log("Load");
+        //     const str = JSON.stringify({ param: "htmlDelete", file_name_value: "temporary.html" });
+        //     axios.post(requestURL, str)
+        //       .then((response) => {
+        //         console.log(response);
+        //       })
+        //       .catch((error) => {
+        //         console.log(error);
+        //       })
+        //   }, 5000);
+        // }
 
-      const maxTime = 60000;
-      const interval = 200;
+    } catch (error) {
+        if (!callback) {
+            return new Promise((resolve, reject) => {
+                reject(error);
+            })
+        } else {
+            callback(error);
+        }
+    }
 
-      let timerCount = 0;
+    const maxTime = 60000;
+    const interval = 200;
 
-      if (!callback) {
-          return new Promise((resolve, reject) => {
-              const timer = setInterval(function () {
-                  if (!iframe) return clearInterval(timer);
-                  timerCount++;
-                  if (iframe.contentDocument && iframe.contentDocument.readyState === "complete") {
-                      clearInterval(timer);
-                      resolve();
-                  } else if (timerCount * interval > maxTime) {
-                      reject(new Error("Iframe load fail!"));
-                  }
-              }, interval);
-          })
-      } else {
-          const timer = setInterval(function () {
-              if (!iframe) return clearInterval(timer);
-              if (iframe.contentDocument && iframe.contentDocument.readyState === "complete") {
-                  clearInterval(timer);
-                  callback();
-              } else if (timerCount * interval > maxTime) {
-                  callback(new Error("Iframe load fail!"));
-              }
-          }, interval);
-      }
+    let timerCount = 0;
+
+    if (!callback) {
+        return new Promise((resolve, reject) => {
+            const timer = setInterval(function () {
+                if (!iframe) return clearInterval(timer);
+                timerCount++;
+                if (iframe.contentDocument && iframe.contentDocument.readyState === "complete") {
+                    clearInterval(timer);
+                    resolve();
+                } else if (timerCount * interval > maxTime) {
+                    reject(new Error("Iframe load fail!"));
+                }
+            }, interval);
+        })
+    } else {
+        const timer = setInterval(function () {
+            if (!iframe) return clearInterval(timer);
+            if (iframe.contentDocument && iframe.contentDocument.readyState === "complete") {
+                clearInterval(timer);
+                callback();
+            } else if (timerCount * interval > maxTime) {
+                callback(new Error("Iframe load fail!"));
+            }
+        }, interval);
+    }
   };
 
   //
   class DOMHalper {
     static parseStrToDom(str) {
-      let  parser = new DOMParser();
+      let parser = new DOMParser();
       // return parser.parseFromString(str, "application/xml");
       return parser.parseFromString(str, "text/html");
     }
@@ -126,6 +140,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     onClick() {
+      // console.log("onClick");
       this.element.contentEditable = "true";
       this.element.focus();
     }
@@ -162,9 +177,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     open(page, cb) {
       this.currentPage = page;
-
+      // console.log(page);
       axios
-        .get("../" + page + "?v=" + Math.random())
+        .get("../" + page) // + "?v=" + Math.random()
         .then((res) => DOMHalper.parseStrToDom(res.data))
         .then(DOMHalper.wrapTextNodes)
         .then((dom) => {
@@ -173,11 +188,24 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(DOMHalper.serializeDomStr)
         .then((html) => {
-          let body = {
-              param: "saveTemPage",
-              html: html
-            };
-          const str = JSON.stringify(body);
+          const str = JSON.stringify({ param: "saveTemPage", html: html });
+          axios.post(requestURL, str)
+            .then((response) => {
+              console.log(response);
+              // this.iframe.src = "../temporary.html";
+              this.iframe.load("../temporary.html");
+              // this.enableEditing();
+              // this.injectStyles();
+            })
+            .catch((error) => {
+              console.log(error);
+            })
+        })
+        // .then(() => this.iframe.src = "../temporary.html")
+        // .then(() => this.iframe.load("../temporary.html"))
+        .then(() => this.iframe.onload = () => {
+          // console.log("Load");
+          const str = JSON.stringify({ param: "htmlDelete", file_name_value: "temporary.html" });
           axios.post(requestURL, str)
             .then((response) => {
               console.log(response);
@@ -185,10 +213,15 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch((error) => {
               console.log(error);
             })
+          this.enableEditing();
+          this.injectStyles();
         })
-        .then(() => this.iframe.load("../temp.html"))
-        .then(() => this.enableEditing())
-        .then(() => this.injectStyles())
+        // .then(() => this.iframe.onload = setTimeout(() => {
+        //   this.enableEditing();
+        // }, 1000))
+        // .then(() => this.iframe.onload = () => {
+        //   this.injectStyles();
+        // })
         .then(cb)
     }
 
@@ -252,7 +285,10 @@ document.addEventListener('DOMContentLoaded', function() {
   new Vue({
     el: "#app",
     data: {
-      showLoader: true
+      page: "index.html",
+      showLoader: true,
+      pageList: null,
+      backupList: null
     },
     methods: {
       onBtnSave() {
@@ -262,18 +298,70 @@ document.addEventListener('DOMContentLoaded', function() {
           () => {
             this.showLoader = false;
             UIkit.notification({message: 'Успешно сохранено!', status: 'success'});
+            this.loadBackupList();
           },
           () => {
             this.showLoader = false;
             UIkit.notification({message: 'Ошибка сохранения', status: 'danger'});
           }
         );
+      },
+      openPage(page) {
+        this.showLoader = true;
+        window.editor.open(page, () => {
+          this.showLoader = false;
+        });
+        this.page = page;
+        this.loadBackupList();
+      },
+      loadBackupList() {
+        axios.get("./backup/backup.json")
+          .then((response) => {
+            this.backupList = response.data.filter((backup) => {
+              return (backup.page === this.page);
+            })
+            console.log(response);
+          })
+          .catch((error) => {
+            console.log(error);
+          })
+      },
+      restoreBackup(backup) {
+        UIkit.modal
+          .confirm(
+            "Восстановить из резервной копии?",
+            { labels: { ok: "Восстановить", cancel: "Отмена" } }
+          )
+          .then(() => {
+            const str = JSON.stringify({ param: "backup", page: this.page, file: backup.file });
+            axios.post(requestURL, str)
+              .then((response) => {
+                console.log(response);
+                window.editor.open(this.page, () => {
+                  this.showLoader = false;
+                });
+              })
+              .catch((error) => {
+                console.log(error);
+              });
+        })
       }
     },
     created() {
-      window.editor.open("index.html", () => {
+      window.editor.open(this.page, () => {
         this.showLoader = false;
       });
+
+      const str = JSON.stringify({ param: "htmlFilesName" });
+      axios.post(requestURL, str)
+        .then((response) => {
+          this.pageList = response.data;
+          // console.log(response);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+      this.loadBackupList();
     }
   })
 

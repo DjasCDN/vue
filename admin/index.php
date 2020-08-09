@@ -6,15 +6,31 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>admin</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.5.5/css/uikit.min.css" />
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=<?= rand(0, 111111); ?>">
 </head>
 <body>
 
 <div id="app">
   <div class="panel">
-    <button class="uk-button uk-button-primary" type="button" uk-toggle="target: #modal-save">Опубликовать</button>
+    <button class="uk-button uk-button-primary" uk-toggle="target: #modal-open">Открыть</button>
+    <button class="uk-button uk-button-primary" uk-toggle="target: #modal-save">Опубликовать</button>
+    <button class="uk-button uk-button-primary" uk-toggle="target: #modal-backup">Backup</button>
   </div>
-  <!-- This is the modal -->
+
+  <div id="modal-open" uk-modal>
+      <div class="uk-modal-dialog uk-modal-body">
+          <h2 class="uk-modal-title">Открыть</h2>
+          <ul class="uk-list uk-list-striped">
+            <li v-for="page in pageList" >
+              <a href="#" class="uk-link-muted uk-modal-close" v-on:click="openPage(page)">{{ page }}</a>
+            </li>
+          </ul>
+          <p class="uk-text-right">
+              <button class="uk-button uk-button-default uk-modal-close" type="button">Отмена</button>
+          </p>
+      </div>
+  </div>
+
   <div id="modal-save" uk-modal>
       <div class="uk-modal-dialog uk-modal-body">
           <h2 class="uk-modal-title">Сохранение</h2>
@@ -26,13 +42,28 @@
       </div>
   </div>
 
+  <div id="modal-backup" uk-modal>
+      <div class="uk-modal-dialog uk-modal-body">
+          <h2 class="uk-modal-title">Резервные копии</h2>
+          <span v-if="backupList.length < 1">Резервных копий данной страницы не найдено</span>
+          <ul class="uk-list uk-list-striped">
+            <li v-for="backup in backupList">
+              <span class="uk-link-muted uk-modal-close" v-on:click="restoreBackup(backup)">Резервная копия от {{ backup.time }}</span>
+            </li>
+          </ul>
+          <p class="uk-text-right">
+              <button class="uk-button uk-button-default uk-modal-close" type="button">Отмена</button>
+          </p>
+      </div>
+  </div>
+
   <div class="loader" v-bind:class="{ 'active' : showLoader }">
     <span uk-spinner="ratio: 4.5"></span>
   </div>
 </div>
 
 
-<iframe src="" frameborder="0" id="iframe" class="iframe"></iframe>
+<iframe frameborder="0" id="iframe" class="iframe"></iframe>
 
 
 
